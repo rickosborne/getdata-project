@@ -39,5 +39,24 @@ features$axis <- factorsFromRegex("^.+-([XYZ],[XYZ]|[XYZ]).*$", features$feature
 features$func <- factorsFromRegex("^.*\\b(\\w+)\\(.*$", features$feature)
 features$signal <- factorsFromRegex("^(\\w+)-.*$", features$feature)
 features$domain <- factor(ifelse(substr(features$signal, 1, 1) == "t", "time", ifelse(substr(features$signal, 1, 1) == "f", "frequency", NA)))
+features$col <- with(features, { ifelse(func %in% c("mean","std") & !is.na(func), gsub("\\.NA","",paste(signal, func, axis, sep=".")), NA) })
 # h5write(features, TIDY_PATH, "features", write.attributes=TRUE)
 saveData("features", features)
+
+# Data
+xs <- loadData("X")
+# Dark witchdoctor magic to change col names from V123 to something meaningful
+featuresToSave <- !is.na(features$col)
+featureIdsToSave <- features[featuresToSave,"id"]
+names(xs)[featureIdsToSave] <- features[featuresToSave,"col"]
+tidy <- xs[,featureIdsToSave]
+rm(xs) # free up memory
+tidy$subject <- loadData("subject", col.names=c("id"))$id
+tidy$activity <- factor(loadData("y", col.names=c("id"))$id, labels=activityLabels$label)
+saveData("tidy", tidy)
+
+# Generate the summary dataset
+tidySummary <- aggregate(. ~ activity * subject, data=tidy, mean)
+saveData("summary", tidySummary)
+
+
