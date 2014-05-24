@@ -10,6 +10,8 @@ TIDY_PATH <- "data-tidy"
 DOWNLOAD_METHOD <- "curl"
 # You should not need to change anything below here.
 
+source("helper.R")
+
 # Download the data if needed
 if (!file.exists(DATA_DIR)) dir.create(DATA_DIR)
 if (!file.exists(ZIP_PATH)) download.file(DATA_URL, ZIP_PATH, DOWNLOAD_METHOD)
@@ -29,13 +31,13 @@ if (!file.exists(TIDY_PATH)) dir.create(TIDY_PATH)
 # Activity Labels
 activityLabels <- read.table(file.path(HAR_DIR, "activity_labels.txt"), sep=" ", col.names=c("id", "label"))
 # h5write(activityLabels, TIDY_PATH, "labels", write.attributes=TRUE)
-save(activityLabels, file=file.path(TIDY_PATH, "activity-labels.RData"))
+saveData("activity-labels", activityLabels)
 
 # Features
 features <- read.table(file.path(HAR_DIR, "features.txt"), sep=" ", col.names=c("id", "feature"))
-features$axis <- factor(ifelse(grepl("-[XYZ]", features$feature), gsub("^.+-([XYZ],[XYZ]|[XYZ]).*$", "\\1", features$feature), NA))
-features$func <- factor(ifelse(grepl("\\b(\\w+)\\(", features$feature), gsub("^.*\\b(\\w+)\\(.*$", "\\1", features$feature), NA))
-features$signal <- factor(ifelse(grepl("^\\w+-", features$feature), gsub("^(\\w+)-.*$", "\\1", features$feature), NA))
+features$axis <- factorsFromRegex("^.+-([XYZ],[XYZ]|[XYZ]).*$", features$feature)
+features$func <- factorsFromRegex("^.*\\b(\\w+)\\(.*$", features$feature)
+features$signal <- factorsFromRegex("^(\\w+)-.*$", features$feature)
 features$domain <- factor(ifelse(substr(features$signal, 1, 1) == "t", "time", ifelse(substr(features$signal, 1, 1) == "f", "frequency", NA)))
 # h5write(features, TIDY_PATH, "features", write.attributes=TRUE)
-save(features, file=file.path(TIDY_PATH, "features.RData"))
+saveData("features", features)
