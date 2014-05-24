@@ -59,4 +59,8 @@ saveData("tidy", tidy)
 tidySummary <- aggregate(. ~ activity * subject, data=tidy, mean)
 saveData("summary", tidySummary)
 
-
+# Zip the results and clean up
+zipPath <- paste0(TIDY_PATH, ".zip")
+if (file.exists(zipPath)) unlink(zipPath)
+zip(zipPath, TIDY_PATH, extras="-x .DS_Store")
+unlink(TIDY_PATH, recursive=TRUE)
