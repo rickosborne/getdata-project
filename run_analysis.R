@@ -64,3 +64,6 @@ zipPath <- paste0(TIDY_PATH, ".zip")
 if (file.exists(zipPath)) unlink(zipPath)
 zip(zipPath, TIDY_PATH, extras="-x .DS_Store")
 unlink(TIDY_PATH, recursive=TRUE)
+
+# TXT file for submission
+write.table(tidySummary, paste0(TIDY_PATH, ".txt"))
